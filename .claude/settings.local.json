@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(pio run:*)",
+      "Bash(platformio run:*)",
+      "Bash(~/.platformio/penv/bin/platformio run:*)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(~/.platformio/penv/bin/platformio pkg show:*)",
+      "Bash(~/.platformio/penv/bin/platformio pkg update)",
+      "Bash(~/.platformio/penv/bin/platformio pkg update:*)",
+      "Bash(~/.platformio/penv/bin/platformio pkg install:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
