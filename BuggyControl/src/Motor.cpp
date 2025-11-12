@@ -1,0 +1,169 @@
+#include "Motor.h"
+
+Motor::Motor() {
+  // Default-Konstruktor für globale Initialisierung
+  pin_front = 0;
+  pin_back = 0;
+  max_duty = 0;
+  min_duty = 0;
+  direction_change_delay = 0;
+  freq = 0;
+  deadzone = 5;
+  threshold = 30;
+  threshold_time = 300;
+  current_duty = 0;
+}
+
+Motor::Motor(int _pin_front, int _pin_back, int _max_duty, int _min_duty,
+             int _direction_change_delay, int _freq) {
+  pin_front = _pin_front;
+  pin_back = _pin_back;
+  max_duty = _max_duty;
+  min_duty = _min_duty;
+  freq = _freq;
+  direction_change_delay = _direction_change_delay;
+  deadzone = 5;
+  threshold = 30;
+  threshold_time = 300;
+  current_duty = 0;
+
+  // Konfiguration der jeweiligen Pins
+  ledcAttach(pin_front, freq, 8);
+  ledcAttach(pin_back, freq, 8);
+
+  // Zur Sicherheit Pins 0 setzen
+  ledcWrite(pin_front, 0);
+  ledcWrite(pin_back, 0);
+}
+
+int Motor::getPin(int type) {
+  if (type == -1) {
+    return pin_back;
+  } else if (type == 1) {
+    return pin_front;
+  } else {
+    return 0;
+  }
+}
+
+int Motor::getCurrentDuty() {
+  return current_duty;
+}
+
+void Motor::setDeadzone(int dz) {
+  deadzone = dz;
+}
+
+void Motor::setThreshold(int th) {
+  threshold = th;
+}
+
+void Motor::setThresholdTime(int tt) {
+  threshold_time = tt;
+}
+
+int Motor::checkDutyRange(int target_duty) {
+  Serial.print("checkDutyRange: target_duty input = ");
+  Serial.println(target_duty);
+
+  if (abs(target_duty) < deadzone) {
+    return 0;
+  } else if (abs(target_duty) < min_duty) {
+    if (target_duty > 0) {
+      return min_duty;
+    } else {
+      return -min_duty;
+    }
+  } else if (abs(target_duty) > max_duty) {
+    if (target_duty > 0) {
+      return max_duty;
+    } else {
+      return -max_duty;
+    }
+  } else {
+    return target_duty;
+  }
+}
+
+void Motor::fadeDuty(int target_duty) {
+  Serial.print("fadeDuty target_duty start = ");
+  Serial.println(target_duty);
+
+  target_duty = checkDutyRange(target_duty);
+
+  if (target_duty > 0) {
+    ledcFade(pin_front, abs(current_duty) * 255 / 100, abs(target_duty) * 255 / 100, threshold_time);
+    ledcWrite(pin_back, 0);
+  } else if (target_duty < 0) {
+    ledcFade(pin_back, abs(current_duty) * 255 / 100, abs(target_duty) * 255 / 100, threshold_time);
+    ledcWrite(pin_front, 0);
+  } else {
+    safetyDelay();
+  }
+
+  current_duty = target_duty;
+  Serial.print("current_duty = ");
+  Serial.println(current_duty);
+}
+
+void Motor::setDuty(int target_duty) {
+  target_duty = checkDutyRange(target_duty);
+  Serial.print("aktualisierte Duty: ");
+  Serial.println(target_duty);
+
+  if (target_duty > 0) {
+    ledcWrite(pin_back, 0);
+    ledcWrite(pin_front, abs(target_duty) * 255 / 100);
+    Serial.print("Duty auf ");
+    Serial.print(target_duty);
+    Serial.println(" bei pin_front");
+  } else if (target_duty < 0) {
+    ledcWrite(pin_front, 0);
+    ledcWrite(pin_back, abs(target_duty) * 255 / 100);
+    Serial.print("Duty auf ");
+    Serial.print(target_duty);
+    Serial.println(" bei pin_back");
+  } else {
+    safetyDelay();
+    Serial.println("safety_delay durchgeführt");
+  }
+
+  current_duty = target_duty;
+}
+
+void Motor::safetyDelay() {
+  Serial.println("safety_delay gestartet");
+  delay(direction_change_delay);
+  ledcWrite(pin_front, 0);
+  ledcWrite(pin_back, 0);
+  Serial.println("safety_delay durchgeführt");
+}
+
+void Motor::changeSpeed(int direction_vector) {
+  Serial.print("changeSpeed mit direction_vector ");
+  Serial.println(direction_vector);
+
+  int target_duty = current_duty + direction_vector;
+
+  if (target_duty > 0) {
+    if (current_duty < 0) {
+      safetyDelay();
+    }
+    if (abs(target_duty - current_duty) < threshold) {
+      setDuty(target_duty);
+    } else {
+      fadeDuty(target_duty);
+    }
+  } else if (target_duty < 0) {
+    if (current_duty > 0) {
+      safetyDelay();
+    }
+    if (abs(target_duty - current_duty) < threshold) {
+      setDuty(target_duty);
+    } else {
+      fadeDuty(target_duty);
+    }
+  } else {
+    setDuty(0);
+  }
+}

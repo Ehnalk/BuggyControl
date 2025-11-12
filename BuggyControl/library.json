@@ -1,0 +1,30 @@
+{
+  "name": "BuggyControl",
+  "version": "1.0.0",
+  "description": "ESP32 Arduino library for controlling RC buggy with motor, servo steering and LED management",
+  "keywords": ["esp32", "motor", "servo", "led", "buggy", "rc", "pwm"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/niklasschoening/BuggyControl.git"
+  },
+  "authors": [
+    {
+      "name": "Niklas Schöning"
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/niklasschoening/BuggyControl",
+  "dependencies": {
+    "madhephaestus/ESP32Servo": "^3.0.5"
+  },
+  "frameworks": ["arduino"],
+  "platforms": ["espressif32"],
+  "export": {
+    "include": [
+      "src/*",
+      "examples/*",
+      "*.md",
+      "library.properties"
+    ]
+  }
+}
