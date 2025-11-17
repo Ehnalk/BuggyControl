@@ -18,10 +18,11 @@ private:
   int percentToDegree(int steering_percent);
 
 public:
-  SteeringServo(int pin, int rest_position, int max_steering_degree, int deadzone);
+  SteeringServo(int control_pin, int power_pin, int rest_position, int max_steering_degree, int deadzone);
   SteeringServo();  // Default-Konstruktor
 
   void steer(int steering_vector);
+  void steerAbsolute(int steering_percent);
   int getCurrentSteeringDegree();
   void setRestPosition();
 };

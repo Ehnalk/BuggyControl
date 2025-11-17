@@ -2,7 +2,6 @@
 #define MOTOR_H
 
 #include <Arduino.h>
-#include <Ticker.h>
 
 class Motor {
 private:
@@ -23,16 +22,10 @@ private:
   int current_duty;
   int last_duty;
 
-  int time_passed;
-  int start_time;
-
-  Ticker delayChecker;
-
   int checkDutyRange(int target_duty);
   void fadeDuty(int target_duty);
   void setDuty(int target_duty);
   void safetyDelay();
-  void startDelay();
 
 public:
   Motor(int pwm_pin_front, int pwm_pin_back, int high_pin_front, int high_pin_back, int max_duty, int min_duty,
@@ -41,12 +34,12 @@ public:
 
   int getPin(int type);
   int getCurrentDuty();
-  bool changeSpeed(int direction_vector);
+  void changeSpeed(int direction_vector);
+  void changeSpeedAbsolute(int target_duty);
 
   void setDeadzone(int dz);
   void setThreshold(int th);
   void setThresholdTime(int tt);
-  bool checkDelay();
 };
 
 #endif // MOTOR_H

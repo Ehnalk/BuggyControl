@@ -1,6 +1,6 @@
 #include "Motor.h"
 
-Motor::Motor() : delayChecker() {
+Motor::Motor() {
   // Default-Konstruktor für globale Initialisierung
   pwm_pin_front = 0;
   pwm_pin_back = 0;
@@ -14,12 +14,10 @@ Motor::Motor() : delayChecker() {
   threshold = 30;
   threshold_time = 300;
   current_duty = 0;
-  time_passed = 0;
-  start_time = 0;
 }
 
 Motor::Motor(int _pwm_pin_front, int _pwm_pin_back, int _high_pin_front, int _high_pin_back, int _max_duty, int _min_duty,
-             int _direction_change_delay, int _freq) : delayChecker() {
+             int _direction_change_delay, int _freq) {
   pwm_pin_front = _pwm_pin_front;
   pwm_pin_back = _pwm_pin_back;
   high_pin_back = _high_pin_back;
@@ -124,7 +122,7 @@ void Motor::fadeDuty(int target_duty) {
     ledcWrite(pwm_pin_back, 0);
     digitalWrite(high_pin_back, LOW);
 
-    startDelay();
+    delay(direction_change_delay);
   }
 
   current_duty = target_duty;
@@ -132,35 +130,6 @@ void Motor::fadeDuty(int target_duty) {
   Serial.println(current_duty);
 }
 
-bool Motor::checkDelay() {
-  bool is_blocking;
-  time_passed = millis() - start_time;
-  if(time_passed <= direction_change_delay) {
-    is_blocking = true;
-  }
-  else {
-    is_blocking = false;
-    delayChecker.detach();
-  }
-  return is_blocking;
-}
-
-static void checkDelayCallback(Motor* instance) {
-  instance->checkDelay();
-}
-
-void Motor::startDelay() {
-  start_time = millis();
-  time_passed = 0;
-  
-  ledcWrite(pwm_pin_front, 0);
-  digitalWrite(high_pin_front, LOW);
-
-  ledcWrite(pwm_pin_back, 0);
-  digitalWrite(high_pin_back, LOW);
-
-  delayChecker.attach_ms(10, checkDelayCallback, this);
-}
 
 void Motor::setDuty(int target_duty) {
   target_duty = checkDutyRange(target_duty);
@@ -188,8 +157,13 @@ void Motor::setDuty(int target_duty) {
     Serial.print(target_duty);
     Serial.println(" bei pwm_pin_back");
   } else {
-    startDelay();
-    Serial.println("safety_delay initialisiert");
+    ledcWrite(pwm_pin_front, 0);
+    digitalWrite(high_pin_front, LOW);
+
+    ledcWrite(pwm_pin_back, 0);
+    digitalWrite(high_pin_back, LOW);
+    
+    delay(direction_change_delay);
   }
 
   current_duty = target_duty;
@@ -203,7 +177,7 @@ void Motor::safetyDelay() {
   Serial.println("safety_delay durchgeführt");
 }
 
-bool Motor::changeSpeed(int direction_vector) {
+void Motor::changeSpeed(int direction_vector) {
   Serial.print("changeSpeed mit direction_vector ");
   Serial.println(direction_vector);
 
@@ -211,17 +185,13 @@ bool Motor::changeSpeed(int direction_vector) {
 
   last_duty = current_duty;
 
-  if(checkDelay()) {
-    return false;
-  }
-
   // Prüfe auf Richtungswechsel und stoppe Motor erst
   if ((target_duty > 0 && current_duty < 0) || (target_duty < 0 && current_duty > 0)) {
     ledcWrite(pwm_pin_front, 0);
     ledcWrite(pwm_pin_back, 0);
     current_duty = 0;
-    delay(10);
-    Serial.println("Richtungswechsel erkannt - Motor gestoppt, Delay gestartet");
+    delay(direction_change_delay);
+    Serial.println("Richtungswechsel erkannt - Motor gestoppt, Delay durchgeführt");
   }
 
   if (target_duty > 0) {
@@ -239,5 +209,95 @@ bool Motor::changeSpeed(int direction_vector) {
   } else {
     setDuty(0);
   }
-  return true;
+}
+
+void Motor::changeSpeedAbsolute(int target_duty)
+{
+  target_duty = checkDutyRange(target_duty);
+  if(abs(current_duty - target_duty) >= threshold)
+  {
+    if(current_duty > 0)
+    {
+      if(target_duty < 0)
+      {
+        fadeDuty(0);
+        fadeDuty(target_duty);
+      }
+      else if(target_duty > 0)
+      {
+        fadeDuty(target_duty);
+      }
+      else if(target_duty == 0)
+      {
+        fadeDuty(0);
+      }
+    }
+    else if(current_duty < 0)
+    {
+      if(target_duty > 0)
+      {
+        fadeDuty(0);
+        fadeDuty(target_duty);
+      }
+      else if(target_duty < 0)
+      {
+        fadeDuty(target_duty);
+      }
+      else if(target_duty == 0)
+      {
+        fadeDuty(0);
+      }
+    }
+    else if(current_duty == 0)
+    {
+      fadeDuty(target_duty);
+    }
+    else
+    {
+      setDuty(0);
+    }
+  }
+  else
+  {
+    if(current_duty > 0)
+    {
+      if(target_duty < 0)
+      {
+        setDuty(0);
+        setDuty(target_duty);
+      }
+      else if(target_duty > 0)
+      {
+        setDuty(target_duty);
+      }
+      else if(target_duty == 0)
+      {
+        setDuty(0);
+      }
+    }
+    else if(current_duty < 0)
+    {
+      if(target_duty > 0)
+      {
+        setDuty(0);
+        setDuty(target_duty);
+      }
+      else if(target_duty < 0)
+      {
+        setDuty(target_duty);
+      }
+      else if(target_duty == 0)
+      {
+        setDuty(0);
+      }
+    }
+    else if(current_duty == 0)
+    {
+      setDuty(target_duty);
+    }
+    else
+    {
+      setDuty(0);
+    }
+  }
 }
