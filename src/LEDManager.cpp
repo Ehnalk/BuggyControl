@@ -11,7 +11,11 @@ LEDManager::LEDManager() : indicator_ticker() {
   indicator_timing = 600;
 }
 
-LEDManager::LEDManager(std::vector<int> _leds, int _rest_state, int _brightness, int _freq) : indicator_ticker() {
+LEDManager::LEDManager(std::vector<int> _leds, 
+                       int _rest_state, 
+                       int _brightness, 
+                       int _freq
+                       ) : indicator_ticker() {
   leds = _leds;
   rest_state = _rest_state;
   brightness = _brightness;

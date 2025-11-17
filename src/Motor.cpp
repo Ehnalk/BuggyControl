@@ -14,10 +14,19 @@ Motor::Motor() {
   threshold = 40;
   threshold_time = 300;
   current_duty = 0;
+  int last_duty = 0;
 }
 
-Motor::Motor(int _pwm_pin_front, int _pwm_pin_back, int _high_pin_front, int _high_pin_back, int _max_duty, int _min_duty,
-             int _direction_change_delay, int _freq) {
+Motor::Motor(int _pwm_pin_front, 
+             int _pwm_pin_back,
+             int _high_pin_front, 
+             int _high_pin_back, 
+             int _max_duty, 
+             int _min_duty,
+             int _direction_change_delay, 
+             int _freq
+             ) 
+{
   pwm_pin_front = _pwm_pin_front;
   pwm_pin_back = _pwm_pin_back;
   high_pin_back = _high_pin_back;

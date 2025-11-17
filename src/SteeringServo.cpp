@@ -9,7 +9,11 @@ SteeringServo::SteeringServo() {
   deadzone = 0;
 }
 
-SteeringServo::SteeringServo(int control_pin, int power_pin, int _rest_position, int _max_steering_degree, int _deadzone) {
+SteeringServo::SteeringServo(int control_pin, 
+                             int power_pin, 
+                             int _rest_position, 
+                             int _max_steering_degree, 
+                             int _deadzone) {
   pin = control_pin;
   if(power_pin >= 0) {
     pinMode(power_pin, OUTPUT);
