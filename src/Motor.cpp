@@ -12,7 +12,7 @@ Motor::Motor() {
   freq = 0;
   deadzone = 5;
   threshold = 40;
-  threshold_time = 300;
+  threshold_time = 3;
   current_duty = 0;
   last_duty = 0;
 }
@@ -37,7 +37,7 @@ Motor::Motor(int _pwm_pin_front,
   direction_change_delay = _direction_change_delay;
   deadzone = 5;
   threshold = 30;
-  threshold_time = 300;
+  threshold_time = 3;
   current_duty = 0;
 
   last_duty = 0;
@@ -88,7 +88,7 @@ void Motor::setThresholdTime(int tt) {
   threshold_time = tt;
 }
 
-int IRAM_ATTR Motor::checkDutyRange(int target_duty) {
+int Motor::checkDutyRange(int target_duty) {
   if (abs(target_duty) < deadzone) {
     return 0;
   } else if (abs(target_duty) < min_duty) {
@@ -108,7 +108,7 @@ int IRAM_ATTR Motor::checkDutyRange(int target_duty) {
   }
 }
 
-void IRAM_ATTR Motor::fadeDuty(int target_duty) {
+void Motor::fadeDuty(int target_duty) {
   target_duty = checkDutyRange(target_duty);
 
   // Prüfe auf Richtungswechsel über die Null
@@ -149,7 +149,7 @@ void IRAM_ATTR Motor::fadeDuty(int target_duty) {
 }
 
 
-void IRAM_ATTR Motor::setDuty(int target_duty) {
+void Motor::setDuty(int target_duty) {
   target_duty = checkDutyRange(target_duty);
 
   // Prüfe auf Richtungswechsel über die Null
@@ -187,7 +187,7 @@ void IRAM_ATTR Motor::setDuty(int target_duty) {
   }
 }
 
-void IRAM_ATTR Motor::changeSpeed(int direction_vector) {
+void Motor::changeSpeed(int direction_vector) {
   int target_duty = current_duty + direction_vector;
 
   last_duty = current_duty;
@@ -200,7 +200,7 @@ void IRAM_ATTR Motor::changeSpeed(int direction_vector) {
   }
 }
 
-void IRAM_ATTR Motor::changeSpeedAbsolute(int target_duty)
+void Motor::changeSpeedAbsolute(int target_duty)
 {
   target_duty = checkDutyRange(target_duty);
 
