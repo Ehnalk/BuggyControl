@@ -50,6 +50,14 @@ Motor::Motor(int _pwm_pin_front,
 
   last_duty = 0;
 
+  // Launch Control Variablen initialisieren
+  lc_last_call = 0;
+  lc_current_time = 0;
+  lc_start_time = 0;
+  is_launching = false;
+  a = 1;
+  T = 1000;
+
   // Konfiguration der jeweiligen Pins nur bei valider Initialisierung
   if(freq > 0 && max_duty > 0) {
     ledcAttach(pwm_pin_front, freq, 8);
@@ -200,6 +208,7 @@ bool Motor::stopLaunchControl()
 {
   lc_ticker.detach();
   is_launching = false;
+  return true;
 }
 
 bool Motor::launchControl()
