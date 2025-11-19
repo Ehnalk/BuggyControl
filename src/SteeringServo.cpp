@@ -61,11 +61,11 @@ void SteeringServo::steerAbsolute(int steering_percent) {
   // Konvertiere Prozent zu absolutem Winkel
   int steering_degree = percentToDegree(steering_percent);
   int target_steering_degree = rest_position + steering_degree;
-  /*
+  
   if(abs(current_steering_degree - target_steering_degree) < 5 && target_steering_degree != rest_position + max_steering_degree && target_steering_degree != rest_position - max_steering_degree)
   {
     return;
-  }*/
+  }
 
   // Deadzone-Prüfung
   if (abs(rest_position - target_steering_degree) <= deadzone) {
