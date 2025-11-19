@@ -41,24 +41,6 @@ void SteeringServo::begin() {
   initialized = true;
 }
 
-void SteeringServo::steer(int steering_vector) {
-  steering_vector = percentToDegree(steering_vector);
-  int target_steering_degree = current_steering_degree + steering_vector;
-
-  if (target_steering_degree < rest_position - max_steering_degree) {
-    target_steering_degree = rest_position - max_steering_degree;
-  } else if (target_steering_degree > rest_position + max_steering_degree) {
-    target_steering_degree = rest_position + max_steering_degree;
-  } else if (target_steering_degree < rest_position + deadzone && target_steering_degree > rest_position) {
-    target_steering_degree = rest_position;
-  } else if (target_steering_degree > rest_position - deadzone && target_steering_degree < rest_position) {
-    target_steering_degree = rest_position;
-  }
-
-  servo.write(target_steering_degree);
-  current_steering_degree = target_steering_degree;
-}
-
 int SteeringServo::percentToDegree(int steering_percent) {
   int steering_degree = (steering_percent * max_steering_degree) / 100;
   return steering_degree;
@@ -80,10 +62,17 @@ void SteeringServo::steerAbsolute(int steering_percent) {
   int steering_degree = percentToDegree(steering_percent);
   int target_steering_degree = rest_position + steering_degree;
 
+  if(abs(current_steering_degree - target_steering_degree) < 5 && target_steering_degree != rest_position + max_steering_degree && target_steering_degree != rest_position - max_steering_degree)
+  {
+    return;
+  }
+
   // Deadzone-Prüfung
-  if (abs(steering_percent) * max_steering_degree / 100 < deadzone) {
+  if (abs(rest_position - current_steering_degree) <= deadzone) {
     target_steering_degree = rest_position;
   }
+
+
 
   servo.write(target_steering_degree);
   current_steering_degree = target_steering_degree;
