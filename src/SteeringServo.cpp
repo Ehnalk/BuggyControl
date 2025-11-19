@@ -68,7 +68,7 @@ void SteeringServo::steerAbsolute(int steering_percent) {
   }*/
 
   // Deadzone-Prüfung
-  if (abs(rest_position - current_steering_degree) <= deadzone) {
+  if (abs(rest_position - target_steering_degree) <= deadzone) {
     target_steering_degree = rest_position;
   }
 
