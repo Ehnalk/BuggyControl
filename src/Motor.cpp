@@ -60,8 +60,8 @@ Motor::Motor(int _pwm_pin_front,
 
   // Konfiguration der jeweiligen Pins nur bei valider Initialisierung
   if(freq > 0 && max_duty > 0) {
-    ledcAttach(pwm_pin_front, freq, 8);
-    ledcAttach(pwm_pin_back, freq, 8);
+    ledcAttachChannel(pwm_pin_front, freq, 8, 0);
+    ledcAttachChannel(pwm_pin_back, freq, 8, 1);
 
     pinMode(high_pin_front, OUTPUT);
     pinMode(high_pin_back, OUTPUT);
@@ -173,6 +173,7 @@ void Motor::changeSpeed(int direction_vector) {
 void Motor::changeSpeedAbsolute(int target_duty)
 {
   target_duty = checkDutyRange(target_duty);
+  /*
   if(is_launching)
   {
     if(target_duty >= 90)
@@ -183,9 +184,9 @@ void Motor::changeSpeedAbsolute(int target_duty)
     {
       stopLaunchControl();
     }
-  } else if(abs(target_duty - current_duty) <= 3)
+  } else */if(abs(target_duty - current_duty) <= 3)
   {
-    return;
+    setDuty(target_duty);
   }
   else {
     setDuty(target_duty);

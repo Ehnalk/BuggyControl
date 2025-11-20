@@ -11,12 +11,14 @@ LEDManager::LEDManager() : indicator_ticker() {
   indicator_timing = 600;
 }
 
-LEDManager::LEDManager(std::vector<int> _leds, 
-                       int _rest_state, 
-                       int _brightness, 
+LEDManager::LEDManager(std::vector<int> _leds,
+                       std::vector<int> _channels,
+                       int _rest_state,
+                       int _brightness,
                        int _freq
                        ) : indicator_ticker() {
   leds = _leds;
+  channels = _channels;
   rest_state = _rest_state;
   brightness = _brightness;
   freq = _freq;
@@ -24,8 +26,9 @@ LEDManager::LEDManager(std::vector<int> _leds,
   indicator_state = false;
   indicator_timing = 600;
 
-  for (int i : leds) {
-    ledcAttach(i, freq, 8);
+  // Jeder Pin bekommt seinen zugewiesenen Kanal
+  for (size_t i = 0; i < leds.size() && i < channels.size(); i++) {
+    ledcAttachChannel(leds[i], freq, 8, channels[i]);
   }
   rest();
 }
