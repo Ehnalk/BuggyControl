@@ -7,6 +7,7 @@ SteeringServo::SteeringServo() {
   rest_position = 90;
   current_steering_degree = 90;
   max_steering_degree = 0;
+  current_steering_percent = 0;
   deadzone = 0;
   initialized = false;
 }
@@ -50,6 +51,11 @@ int SteeringServo::getCurrentSteeringDegree() {
   return current_steering_degree;
 }
 
+int SteeringServo::getCurrentSteeringPercent() 
+{
+  return current_steering_percent;
+}
+
 void SteeringServo::steerAbsolute(int steering_percent) {
   // Begrenze Eingabe auf ±100%
   if (steering_percent > 100) {
@@ -66,10 +72,13 @@ void SteeringServo::steerAbsolute(int steering_percent) {
   {
     return;
   }
+  current_steering_percent = steering_percent;
 
   // Deadzone-Prüfung
+
   if (abs(rest_position - target_steering_degree) <= deadzone) {
     target_steering_degree = rest_position;
+    current_steering_percent = 0;
   }
 
   servo.write(target_steering_degree);

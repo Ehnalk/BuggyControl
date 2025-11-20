@@ -15,6 +15,8 @@ private:
   int deadzone;
   bool initialized;  // Flag ob begin() aufgerufen wurde
 
+  int current_steering_percent;
+
   Servo servo;
 
   int percentToDegree(int steering_percent);
@@ -27,6 +29,7 @@ public:
   void steer(int steering_vector);
   void steerAbsolute(int steering_percent);
   int getCurrentSteeringDegree();
+  int getCurrentSteeringPercent();
   void setRestPosition();
 };
 
