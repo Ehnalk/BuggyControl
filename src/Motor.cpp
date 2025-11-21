@@ -84,7 +84,12 @@ int Motor::getPin(int type) {
     return pwm_pin_back;
   } else if (type == 1) {
     return pwm_pin_front;
-  } else {
+  } else if (type == -2) {
+    return high_pin_back;
+  } else if (type ==2) {
+    return high_pin_front;
+  }
+  else {
     return 0;
   }
 }
@@ -174,7 +179,7 @@ void Motor::changeSpeed(int direction_vector) {
 void Motor::changeSpeedAbsolute(int target_duty)
 {
   target_duty = checkDutyRange(target_duty);
-  /*
+
   if(is_launching)
   {
     if(target_duty >= 90)
@@ -185,7 +190,7 @@ void Motor::changeSpeedAbsolute(int target_duty)
     {
       stopLaunchControl();
     }
-  } else */if(abs(target_duty - current_duty) <= 3)
+  } else if(abs(target_duty - current_duty) <= 3)
   {
     setDuty(target_duty);
   }

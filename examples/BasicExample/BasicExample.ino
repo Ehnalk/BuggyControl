@@ -11,20 +11,20 @@ Motor motor(13,      // pwm_pin_front
             100,     // max_duty
             30,      // min_duty
             1000,    // direction_change_delay (ms)
-            10000);  // freq (Hz)
+            100000);  // freq (Hz)
 
 // Servo initialisieren
 SteeringServo steering(23,   // control_pin
                        -1,   // power_pin (kein Power-Pin)
                        90,   // rest_position
-                       20,   // max_steering_degree
+                       70,   // max_steering_degree
                        6);   // deadzone
 
-// LEDs initialisieren
-LEDManager leftIndicator({16}, 0, 100, 1000);    // Pin 16, aus, 100% brightness, 1kHz
-LEDManager rightIndicator({5}, 0, 100, 1000);    // Pin 5, aus, 100% brightness, 1kHz
-LEDManager frontLights({19}, 1, 100, 1000);      // Pin 19, an, 100% brightness, 1kHz
-LEDManager rearLights({18}, 1, 100, 1000);       // Pin 18, an, 100% brightness, 1kHz
+// LEDs initialisieren ---- {Led-Pins}, {Led-Channel}, rest-state, brightness, pwm-Frequenz
+LEDManager leftIndicator({16}, {6}, 0, 100, 1000);    // Pin 16, aus, 100% brightness, 1kHz
+LEDManager rightIndicator({5}, {7}, 0, 100, 1000);    // Pin 5, aus, 100% brightness, 1kHz
+LEDManager frontLights({19}, {12}, 1, 100, 1000);      // Pin 19, an, 100% brightness, 1kHz
+LEDManager rearLights({18}, {13}, 1, 100, 1000);       // Pin 18, an, 100% brightness, 1kHz
 
 void printTestHeader(const char* testName) {
   Serial.println("\n========================================");
@@ -39,9 +39,9 @@ void testMotorFunctions() {
   // Test 1: getPin()
   Serial.println("\n[1] Teste getPin()");
   Serial.print("  - Front Pin: ");
-  Serial.println(motor.getPin(0));
-  Serial.print("  - Back Pin: ");
   Serial.println(motor.getPin(1));
+  Serial.print("  - Back Pin: ");
+  Serial.println(motor.getPin(-1));
 
   // Test 2: getCurrentDuty()
   Serial.println("\n[2] Teste getCurrentDuty() - Initial");
@@ -50,7 +50,7 @@ void testMotorFunctions() {
 
   // Test 3: changeSpeed() - Vorwärts
   Serial.println("\n[3] Teste changeSpeed() - Erhoehe um 30%");
-  motor.changeSpeed(30);  // Von 0 auf 30
+  motor.changeSpeedAbsolute(50);  // Von 0 auf 30
   delay(500);
   Serial.print("  - Duty nach Aenderung: ");
   Serial.println(motor.getCurrentDuty());
@@ -58,7 +58,7 @@ void testMotorFunctions() {
 
   // Test 4: changeSpeed() - Höhere Geschwindigkeit
   Serial.println("\n[4] Teste changeSpeed() - Erhoehe um weitere 40% (auf 70%)");
-  motor.changeSpeed(40);  // Von 30 auf 70
+  motor.changeSpeedAbsolute(70);  // Von 30 auf 70
   delay(500);
   Serial.print("  - Duty nach Aenderung: ");
   Serial.println(motor.getCurrentDuty());
@@ -66,22 +66,22 @@ void testMotorFunctions() {
 
   // Test 5: changeSpeed() - Reduzieren
   Serial.println("\n[5] Teste changeSpeed() - Reduziere um 70% (auf 0)");
-  motor.changeSpeed(-70);  // Von 70 auf 0
+  motor.changeSpeedAbsolute(0);  // Von 70 auf 0
   delay(1500);
   Serial.print("  - Duty nach Stopp: ");
   Serial.println(motor.getCurrentDuty());
 
   // Test 6: changeSpeed() - Rückwärts
   Serial.println("\n[6] Teste changeSpeed() - Rueckwaerts um -50%");
-  motor.changeSpeed(-50);  // Von 0 auf -50
+  motor.changeSpeedAbsolute(-50);  // Von 0 auf -50
   delay(500);
-  Serial.print("  - Duty nach Aenderung: ");
+  Serial.print("  - Duty nach Änderung: ");
   Serial.println(motor.getCurrentDuty());
   delay(2000);
 
   // Test 7: changeSpeed() - Zurück zu 0
-  Serial.println("\n[7] Teste changeSpeed() - Erhoehe um 50% (zurueck zu 0)");
-  motor.changeSpeed(50);  // Von -50 auf 0
+  Serial.println("\n[7] Teste changeSpeed() - Erhöhe um 50% (zurück zu 0)");
+  motor.changeSpeedAbsolute(0);  // Von -50 auf 0
   delay(1500);
   Serial.print("  - Duty nach Stopp: ");
   Serial.println(motor.getCurrentDuty());
@@ -90,7 +90,7 @@ void testMotorFunctions() {
   Serial.println("\n[8] Teste setDeadzone()");
   motor.setDeadzone(15);
   Serial.println("  - Deadzone auf 15 gesetzt");
-  motor.changeSpeed(10); // Sollte ignoriert werden
+  motor.changeSpeedAbsolute(10); // Sollte ignoriert werden
   delay(500);
   Serial.print("  - Duty nach changeSpeed(10): ");
   Serial.println(motor.getCurrentDuty());
@@ -127,49 +127,49 @@ void testSteeringServoFunctions() {
 
   // Test 3: steer() - Rechts 25%
   Serial.println("\n[3] Teste steer() - 25% rechts");
-  steering.steer(25);
+  steering.steerAbsolute(25);
   delay(1000);
   Serial.print("  - Aktueller Winkel: ");
   Serial.println(steering.getCurrentSteeringDegree());
 
   // Test 4: steer() - Rechts 50%
   Serial.println("\n[4] Teste steer() - 50% rechts");
-  steering.steer(50);
+  steering.steerAbsolute(75);
   delay(1000);
   Serial.print("  - Aktueller Winkel: ");
   Serial.println(steering.getCurrentSteeringDegree());
 
   // Test 5: steer() - Rechts 100% (Maximum)
   Serial.println("\n[5] Teste steer() - 100% rechts (Maximum)");
-  steering.steer(100);
+  steering.steerAbsolute(100);
   delay(1000);
   Serial.print("  - Aktueller Winkel: ");
   Serial.println(steering.getCurrentSteeringDegree());
 
   // Test 6: steer() - Zurück zu 0
   Serial.println("\n[6] Teste steer() - Zurueck zu 0");
-  steering.steer(0);
+  steering.steerAbsolute(0);
   delay(1000);
   Serial.print("  - Aktueller Winkel: ");
   Serial.println(steering.getCurrentSteeringDegree());
 
   // Test 7: steer() - Links 25%
   Serial.println("\n[7] Teste steer() - 25% links");
-  steering.steer(-25);
+  steering.steerAbsolute(-25);
   delay(1000);
   Serial.print("  - Aktueller Winkel: ");
   Serial.println(steering.getCurrentSteeringDegree());
 
   // Test 8: steer() - Links 50%
   Serial.println("\n[8] Teste steer() - 50% links");
-  steering.steer(-50);
+  steering.steerAbsolute(-75);
   delay(1000);
   Serial.print("  - Aktueller Winkel: ");
   Serial.println(steering.getCurrentSteeringDegree());
 
   // Test 9: steer() - Links 100% (Maximum)
   Serial.println("\n[9] Teste steer() - 100% links (Maximum)");
-  steering.steer(-100);
+  steering.steerAbsolute(-130);
   delay(1000);
   Serial.print("  - Aktueller Winkel: ");
   Serial.println(steering.getCurrentSteeringDegree());
@@ -348,5 +348,5 @@ void setup() {
 
 void loop() {
   // Nichts zu tun
-  delay(1000);
+  delay(100);
 }
