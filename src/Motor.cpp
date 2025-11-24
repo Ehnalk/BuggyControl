@@ -120,6 +120,18 @@ void Motor::setThresholdTime(int tt) {
   threshold_time = tt;
 }
 
+void Motor::setAggression(int new_a) {
+  a = new_a;
+}
+
+void Motor::setFadeTime(int new_fade_time) {
+  fade_time = new_fade_time;
+}
+
+void Motor::setLcTime(int new_lc_time) {
+  T = new_lc_time;
+}
+
 void Motor::startFade(int target_duty)
 {
   is_fading = true;
@@ -246,7 +258,7 @@ int Motor::lcFunction(int t)
   //k = a*2*ln(p/1-p)/T
   //f(t) = L/1+e^-k(t-t0)
   //d(t) = 100/1+e^-(a*2*ln(0.99/1-0.99)/T)(t-T/2)
-  T = 1500; //in ms
+  T = 700; //in ms
   a = 2;
 
   float d = 100.0 / (1.0 + exp(-(a * 2.0 * log(0.99 / (1.0 - 0.99)) / T) * (t - T / 2.0)));

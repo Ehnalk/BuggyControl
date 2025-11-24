@@ -70,6 +70,10 @@ public:
   void setThreshold(int th);
   void setThresholdTime(int tt);
 
+  void setLcTime(int new_lc_time);
+  void setFadeTime(int new_fade_time);
+  void setAggression(int new_a);
+
   bool startLaunchControl();
   bool stopLaunchControl();
 };
