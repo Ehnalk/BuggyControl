@@ -43,6 +43,9 @@ private:
 
   int break_fade_threshhold;
 
+  int delay_start_time;
+  bool is_blocking;
+
   int a;
   int T;
 
@@ -52,6 +55,8 @@ private:
   void startFade(int target_duty);
   void fading();
   void stopFading();
+
+  void startSafetyDelay();
 
   bool launchControl();
   int lcFunction(int t);
@@ -76,6 +81,8 @@ public:
 
   bool startLaunchControl();
   bool stopLaunchControl();
+
+  void setZero();
 };
 
 #endif // MOTOR_H

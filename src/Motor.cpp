@@ -30,6 +30,8 @@ Motor::Motor() {
   fade_start_duty = 0;
   fade_target_duty = 0;
 
+  is_blocking = false;
+  delay_start_time = millis();
 
   a = 1;
   T = 1000;
@@ -132,6 +134,20 @@ void Motor::setLcTime(int new_lc_time) {
   T = new_lc_time;
 }
 
+void Motor::setZero() {
+  ledcWrite(pwm_pin_front, 0);
+  digitalWrite(high_pin_front, LOW);
+  ledcWrite(pwm_pin_back, 0);
+  digitalWrite(high_pin_back, LOW);
+  current_duty = 0;
+}
+
+void Motor::startSafetyDelay() {
+  is_blocking = true;
+  delay_start_time = millis();
+  setZero();
+}
+
 void Motor::startFade(int target_duty)
 {
   is_fading = true;
@@ -188,7 +204,8 @@ void Motor::setDuty(int target_duty) {
     ledcWrite(pwm_pin_back, 0);
     digitalWrite(high_pin_back, LOW);
     current_duty = 0;
-    delay(direction_change_delay);
+    startSafetyDelay();
+    return;
   }
 
   if (target_duty > 0) {
@@ -211,8 +228,9 @@ void Motor::setDuty(int target_duty) {
     digitalWrite(high_pin_front, LOW);
     ledcWrite(pwm_pin_back, 0);
     digitalWrite(high_pin_back, LOW);
-    delay(direction_change_delay);
     current_duty = 0;
+    startSafetyDelay();
+    return;
   }
 }
 
@@ -228,8 +246,15 @@ void Motor::changeSpeedAbsolute(int target_duty)
 {
   target_duty = checkDutyRange(target_duty);
 
-  if(is_launching)
-  {
+  if(is_blocking) {
+    if(millis() - delay_start_time <= direction_change_delay) {
+      return;
+    } else {
+      is_blocking = false;
+    }
+  }
+
+  if(is_launching) {
     if(target_duty >= 90)
     {
       return;
