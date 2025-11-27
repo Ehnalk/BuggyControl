@@ -26,12 +26,13 @@ Motor::Motor() {
   is_fading = false;
   fade_start_time = millis();
   fade_current_time = millis();
-  ramp = 1;
   fade_start_duty = 0;
   fade_target_duty = 0;
 
   is_blocking = false;
   delay_start_time = millis();
+
+  should_fade = false;
 
   a = 1;
   T = 1000;
@@ -69,6 +70,8 @@ Motor::Motor(int _pwm_pin_front,
   is_launching = false;
   a = 1;
   T = 1000;
+
+  should_fade = false;
 
   // Konfiguration der jeweiligen Pins nur bei valider Initialisierung
   // Verwende Timer 1 (Kanäle 2-3) um Konflikt mit Servo (Timer 0, 50Hz) zu vermeiden
@@ -154,17 +157,20 @@ void Motor::startFade(int target_duty)
   fade_target_duty = target_duty;
   fade_start_time = millis();
   fade_start_duty = current_duty;
-  ramp = (target_duty-current_duty)/fade_time;
   fade_ticker.attach_ms(fade_ticker_timing, [this]() { this->fading(); });
 }
 
 void Motor::fading()
 {
   fade_current_time = millis();
-  setDuty(fade_start_duty + ramp * (fade_current_time - fade_start_time));
-  if(fade_current_time - fade_start_time >= fade_time)
-  {
-    stopLaunchControl();
+  int elapsed = fade_current_time - fade_start_time;
+
+  if(elapsed >= fade_time) {
+    setDuty(fade_target_duty);
+    stopFading();
+  } else {
+    int new_duty = fade_start_duty + (fade_target_duty - fade_start_duty) * elapsed / fade_time;
+    setDuty(new_duty);
   }
 }
 
@@ -242,6 +248,14 @@ void Motor::changeSpeed(int direction_vector) {
   setDuty(target_duty);
 }
 
+void Motor::initFading() {
+  should_fade = true;
+}
+
+void Motor::uninitFading() {
+  should_fade = false;
+}
+
 void Motor::changeSpeedAbsolute(int target_duty)
 {
   target_duty = checkDutyRange(target_duty);
@@ -271,7 +285,7 @@ void Motor::changeSpeedAbsolute(int target_duty)
     }
   } else if(abs(target_duty - current_duty) <= 3) {
     return;
-  } else if( abs(target_duty - current_duty) >= threshold) {
+  } else if( abs(target_duty - current_duty) >= threshold && should_fade) {
     startFade(target_duty);
   } else {
     setDuty(target_duty);
@@ -303,16 +317,17 @@ bool Motor::launchControl()
   int target_duty = lcFunction(lc_current_time - lc_start_time);
   if(current_duty < 0)
   {
-    stopLaunchControl();
+    return stopLaunchControl();
   }
   else if(current_duty < 95)
   {
     setDuty(target_duty);
+    return true;
   }
   else
   {
     setDuty(100);
-    stopLaunchControl();
+    return stopLaunchControl();
   }
 }
 
