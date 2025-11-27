@@ -40,6 +40,7 @@ private:
   int fade_ticker_timing;
   int fade_start_duty;
   int fade_target_duty;
+  bool should_fade;
 
   int break_fade_threshhold;
 
@@ -83,6 +84,9 @@ public:
   bool stopLaunchControl();
 
   void setZero();
+
+  void initFading();
+  void uninitFading();
 };
 
 #endif // MOTOR_H
