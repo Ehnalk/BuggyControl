@@ -33,6 +33,8 @@ Motor::Motor() {
   is_blocking = false;
   delay_start_time = millis();
 
+  should_fade = false;
+
   a = 1;
   T = 1000;
 }
@@ -69,6 +71,8 @@ Motor::Motor(int _pwm_pin_front,
   is_launching = false;
   a = 1;
   T = 1000;
+
+  should_fade = false;
 
   // Konfiguration der jeweiligen Pins nur bei valider Initialisierung
   // Verwende Timer 1 (Kanäle 2-3) um Konflikt mit Servo (Timer 0, 50Hz) zu vermeiden
@@ -242,6 +246,14 @@ void Motor::changeSpeed(int direction_vector) {
   setDuty(target_duty);
 }
 
+void Motor::initFading() {
+  should_fade = true;
+}
+
+void Motor::uninitFading() {
+  should_fade = false;
+}
+
 void Motor::changeSpeedAbsolute(int target_duty)
 {
   target_duty = checkDutyRange(target_duty);
@@ -271,7 +283,7 @@ void Motor::changeSpeedAbsolute(int target_duty)
     }
   } else if(abs(target_duty - current_duty) <= 3) {
     return;
-  } else if( abs(target_duty - current_duty) >= threshold) {
+  } else if( abs(target_duty - current_duty) >= threshold && should_fade) {
     startFade(target_duty);
   } else {
     setDuty(target_duty);
