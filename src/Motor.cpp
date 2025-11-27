@@ -26,7 +26,6 @@ Motor::Motor() {
   is_fading = false;
   fade_start_time = millis();
   fade_current_time = millis();
-  ramp = 1;
   fade_start_duty = 0;
   fade_target_duty = 0;
 
@@ -158,17 +157,20 @@ void Motor::startFade(int target_duty)
   fade_target_duty = target_duty;
   fade_start_time = millis();
   fade_start_duty = current_duty;
-  ramp = (target_duty-current_duty)/fade_time;
   fade_ticker.attach_ms(fade_ticker_timing, [this]() { this->fading(); });
 }
 
 void Motor::fading()
 {
   fade_current_time = millis();
-  setDuty(fade_start_duty + ramp * (fade_current_time - fade_start_time));
-  if(fade_current_time - fade_start_time >= fade_time)
-  {
-    stopLaunchControl();
+  int elapsed = fade_current_time - fade_start_time;
+
+  if(elapsed >= fade_time) {
+    setDuty(fade_target_duty);
+    stopFading();
+  } else {
+    int new_duty = fade_start_duty + (fade_target_duty - fade_start_duty) * elapsed / fade_time;
+    setDuty(new_duty);
   }
 }
 
